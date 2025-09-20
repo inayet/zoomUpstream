@@ -156,6 +156,7 @@ stdenv.mkDerivation rec {
     # Precompute PATH and XDG_DATA_DIRS prefixes
     pathPrefix=${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]}
     xdgDataDirs=${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]}
+    runtimeLibs="${lib.makeLibraryPath [ glib gtk3 gdk-pixbuf pango cairo freetype fontconfig libdrm libglvnd alsa-lib pulseaudio libpulseaudio nspr nss wayland libxkbcommon pipewire udev systemd xorg.libX11 xorg.libxcb xorg.libXext xorg.libXrender xorg.libXcomposite xorg.libXcursor xorg.libXdamage xorg.libXfixes xorg.libXi xorg.libXrandr xorg.libXtst xorg.libXScrnSaver xorg.libxshmfence xorg.xcbutil xorg.xcbutilcursor xorg.xcbutilimage xorg.xcbutilwm xorg.xcbutilrenderutil xorg.xcbutilkeysyms libuuid mesa atk at-spi2-atk at-spi2-core expat dbus ]}"
 
     # Move real binaries and remove symlink
     mv -f $out/zoom/zoom $out/zoom/zoom.real
@@ -172,7 +173,7 @@ stdenv.mkDerivation rec {
 set -euo pipefail
 export QT_PLUGIN_PATH="$qtPluginPath"
 export QML2_IMPORT_PATH="$qmlImportPath"
-export LD_LIBRARY_PATH="$qtLibPath:$cefLibPath:$appLibPath:''${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
 export PATH="$pathPrefix:\$PATH"
 export XDG_DATA_DIRS="$xdgDataDirs"
 
@@ -211,7 +212,7 @@ EOF
     if [ -z ''${XDG_RUNTIME_DIR:-} ]; then export XDG_RUNTIME_DIR="$(mktemp -d -p /tmp zoomrt-XXXXXX)"; fi
 export QT_PLUGIN_PATH="$qtPluginPath"
 export QML2_IMPORT_PATH="$qmlImportPath"
-export LD_LIBRARY_PATH="$qtLibPath:$cefLibPath:$appLibPath:''${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
 export PATH="$pathPrefix:\$PATH"
 export XDG_DATA_DIRS="$xdgDataDirs"
 
