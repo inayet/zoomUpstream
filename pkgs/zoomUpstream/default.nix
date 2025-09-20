@@ -1,11 +1,9 @@
 {
   lib,
   makeWrapper,
-  qt5,
   pkgs,
   stdenv,
   fetchurl,
-  autoPatchelfHook,
   dpkg,
   copyDesktopItems,
   makeDesktopItem,
@@ -28,6 +26,7 @@
   pulseaudio,
   xdg-utils,
 
+
   wayland,
   libxkbcommon,
   pipewire,
@@ -38,7 +37,6 @@
   xdg-desktop-portal-wlr,
 
   libsecret,
-
   libuuid,
   mesa,
   nspr,
@@ -86,7 +84,7 @@ stdenv.mkDerivation rec {
     libpulseaudio
     pulseaudio
     xdg-utils
-
+    glib
     wayland
     libxkbcommon
     pipewire
