@@ -95,7 +95,7 @@ stdenv.mkDerivation rec {
     wireplumber
     xdg-desktop-portal
     xdg-desktop-portal-gtk
-
+    pkgs.kdePackages.xdg-desktop-portal-kde
     xdg-desktop-portal-wlr
 
     libsecret
@@ -131,16 +131,16 @@ stdenv.mkDerivation rec {
     xorg.xcbutilrenderutil
     xorg.xcbutilkeysyms
 
-    # Qt5 libraries
-    qt5.qtbase
-    qt5.qtmultimedia
-    qt5.qtremoteobjects
-    qt5.qtxmlpatterns
+    # Dropped Qt5 libraries (Qt6-only)
+    # qt5.qtbase
+    # qt5.qtmultimedia
+    # qt5.qtremoteobjects
+    # qt5.qtxmlpatterns
 
-    qt5.qt3d
-    qt5.qtgamepad
-    qt5.qtquickcontrols2
-    qt5.qtdeclarative
+    # qt5.qt3d
+    # qt5.qtgamepad
+    # qt5.qtquickcontrols2
+    # qt5.qtdeclarative
   ];
 
   unpackPhase = ''
@@ -168,9 +168,9 @@ stdenv.mkDerivation rec {
 
     # Wrap main Zoom binary
     wrapProgram $out/bin/zoom \
-      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]} \
+      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire wireplumber ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
-      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]} \
+      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
       --run 'if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi' \
       --run 'if [ -z "''${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z "''${ZOOM_WRAPPER_DBUS:-}" ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "$0" "$@"; fi' \
       --run 'if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi' \
@@ -189,12 +189,12 @@ stdenv.mkDerivation rec {
 
     # Ensure the CEF host gets the same flags and environment
     wrapProgram $out/zoom/ZoomWebviewHost \
-      --prefix PATH : ${lib.makeBinPath [ xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]} \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire wireplumber ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
-      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]} \
-      --run 'if [ -z "${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi' \
-      --run 'if [ ! -S "${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi' \
-      --run 'if [ ! -S "${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi' \
+      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
+      --run 'if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi' \
+      --run 'if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi' \
+      --run 'if [ ! -S "''${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi' \
       --run 'if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi' \
       --run 'if command -v xdg-desktop-portal >/dev/null 2>&1; then (xdg-desktop-portal >/dev/null 2>&1 &); fi' \
       --run 'if command -v xdg-desktop-portal-gtk >/dev/null 2>&1; then (xdg-desktop-portal-gtk >/dev/null 2>&1 &); fi' \
