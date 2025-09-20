@@ -1,6 +1,7 @@
 {
   lib,
   makeWrapper,
+  qt5,
   qt6,
   wrapGAppsHook,
   pkgs,
