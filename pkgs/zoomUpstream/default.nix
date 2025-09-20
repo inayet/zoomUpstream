@@ -190,13 +190,13 @@ export QT_QPA_PLATFORM="wayland;xcb"
 export QTWEBENGINE_DISABLE_SANDBOX=1
 export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist"
 
-if [ -z "\${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="\$(mktemp -d -t zoomrt-XXXXXX)"; fi
-if [ -z "\${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z "\${ZOOM_WRAPPER_DBUS:-}" ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "\$0" "\$@"; fi
+if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi
+if [ -z "''${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z "''${ZOOM_WRAPPER_DBUS:-}" ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "$0" "$@"; fi
 
 trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
-if [ ! -S "\${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi
-if [ ! -S "\${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi
+if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi
+if [ ! -S "''${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi
 if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi
 if command -v xdg-desktop-portal >/dev/null 2>&1; then (xdg-desktop-portal >/dev/null 2>&1 &); fi
 if command -v xdg-desktop-portal-gtk >/dev/null 2>&1; then (xdg-desktop-portal-gtk >/dev/null 2>&1 &); fi
@@ -222,8 +222,8 @@ export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipe
 
 trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
-if [ ! -S "\${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi
-if [ ! -S "\${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi
+if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi
+if [ ! -S "''${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi
 if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi
 if command -v xdg-desktop-portal >/dev/null 2>&1; then (xdg-desktop-portal >/dev/null 2>&1 &); fi
 if command -v xdg-desktop-portal-gtk >/dev/null 2>&1; then (xdg-desktop-portal-gtk >/dev/null 2>&1 &); fi
