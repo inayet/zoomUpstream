@@ -184,8 +184,8 @@ export QT_QPA_PLATFORM="wayland;xcb"
 export QTWEBENGINE_DISABLE_SANDBOX=1
 export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist"
 
-if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi
-if [ -z "''${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z "''${ZOOM_WRAPPER_DBUS:-}" ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "$0" "$@"; fi
+if [ -z ''${XDG_RUNTIME_DIR:-} ]; then export XDG_RUNTIME_DIR="$(mktemp -d -p /tmp zoomrt-XXXXXX)"; fi
+if [ -z ''${DBUS_SESSION_BUS_ADDRESS:-} ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z ''${ZOOM_WRAPPER_DBUS:-} ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "/nix/store/${builtins.baseNameOf out}/bin/zoom" "$@"; fi
 
 trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
@@ -201,8 +201,9 @@ EOF
 
     # Create ZoomWebviewHost wrapper
     cat > $out/zoom/ZoomWebviewHost <<EOF
-#!/usr/bin/env bash
-set -euo pipefail
+    #!/usr/bin/env bash
+    set -euo pipefail
+    if [ -z ''${XDG_RUNTIME_DIR:-} ]; then export XDG_RUNTIME_DIR="$(mktemp -d -p /tmp zoomrt-XXXXXX)"; fi
 export QT_PLUGIN_PATH="$qtPluginPath"
 export QML2_IMPORT_PATH="$qmlImportPath"
 export LD_LIBRARY_PATH="$qtLibPath:$cefLibPath:$appLibPath:''${LD_LIBRARY_PATH:-}"
