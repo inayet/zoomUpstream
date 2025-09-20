@@ -185,7 +185,14 @@ export QTWEBENGINE_DISABLE_SANDBOX=1
 export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist"
 
 if [ -z ''${XDG_RUNTIME_DIR:-} ]; then export XDG_RUNTIME_DIR="$(mktemp -d -p /tmp zoomrt-XXXXXX)"; fi
-if [ -z ''${DBUS_SESSION_BUS_ADDRESS:-} ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z ''${ZOOM_WRAPPER_DBUS:-} ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "/nix/store/${builtins.baseNameOf out}/bin/zoom" "$@"; fi
+if [ -z ''${DBUS_SESSION_BUS_ADDRESS:-} ]; then
+  if command -v dbus-launch >/dev/null 2>&1; then
+    eval "$(dbus-launch --sh-syntax)"
+  else
+    export DBUS_SESSION_BUS_ADDRESS="unix:path=''${XDG_RUNTIME_DIR}/bus"
+    dbus-daemon --session --address="$DBUS_SESSION_BUS_ADDRESS" --fork >/dev/null 2>&1 || true
+  fi
+fi
 
 trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
