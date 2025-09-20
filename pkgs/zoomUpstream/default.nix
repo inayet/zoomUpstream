@@ -173,7 +173,7 @@ stdenv.mkDerivation rec {
 set -euo pipefail
 export QT_PLUGIN_PATH="$qtPluginPath"
 export QML2_IMPORT_PATH="$qmlImportPath"
-export LD_LIBRARY_PATH="$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="${NIX_LD_LIBRARY_PATH:+$NIX_LD_LIBRARY_PATH:}$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
 export PATH="$pathPrefix:\$PATH"
 export XDG_DATA_DIRS="$xdgDataDirs"
 
@@ -195,13 +195,13 @@ fi
 
 trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
-if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi
-if [ ! -S "''${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi
-if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi
-if command -v xdg-desktop-portal >/dev/null 2>&1; then (xdg-desktop-portal >/dev/null 2>&1 &); fi
-if command -v xdg-desktop-portal-gtk >/dev/null 2>&1; then (xdg-desktop-portal-gtk >/dev/null 2>&1 &); fi
 
-exec "$out/zoom/zoom.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "\$@"
+
+if [ -n "${NIX_LD:-}" ] && [ -n "${NIX_LD_LIBRARY_PATH:-}" ]; then
+  exec "$NIX_LD" --library-path "$NIX_LD_LIBRARY_PATH" "$out/zoom/zoom.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
+else
+  exec "$out/zoom/zoom.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
+fi
 EOF
     chmod +x $out/bin/zoom
 
@@ -212,7 +212,7 @@ EOF
     if [ -z ''${XDG_RUNTIME_DIR:-} ]; then export XDG_RUNTIME_DIR="$(mktemp -d -p /tmp zoomrt-XXXXXX)"; fi
 export QT_PLUGIN_PATH="$qtPluginPath"
 export QML2_IMPORT_PATH="$qmlImportPath"
-export LD_LIBRARY_PATH="$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
+export LD_LIBRARY_PATH="${NIX_LD_LIBRARY_PATH:+$NIX_LD_LIBRARY_PATH:}$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
 export PATH="$pathPrefix:\$PATH"
 export XDG_DATA_DIRS="$xdgDataDirs"
 
@@ -224,13 +224,13 @@ export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipe
 if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi
 trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
-if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi
-if [ ! -S "''${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi
-if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi
-if command -v xdg-desktop-portal >/dev/null 2>&1; then (xdg-desktop-portal >/dev/null 2>&1 &); fi
-if command -v xdg-desktop-portal-gtk >/dev/null 2>&1; then (xdg-desktop-portal-gtk >/dev/null 2>&1 &); fi
 
-exec "$out/zoom/ZoomWebviewHost.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "\$@"
+
+if [ -n "${NIX_LD:-}" ] && [ -n "${NIX_LD_LIBRARY_PATH:-}" ]; then
+  exec "$NIX_LD" --library-path "$NIX_LD_LIBRARY_PATH" "$out/zoom/ZoomWebviewHost.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
+else
+  exec "$out/zoom/ZoomWebviewHost.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
+fi
 EOF
     chmod +x $out/zoom/ZoomWebviewHost
   '';
