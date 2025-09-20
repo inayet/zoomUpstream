@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Get latest Zoom URL
+URL=$(curl -sIL https://zoom.us/client/latest/zoom_amd64.deb | grep -i '^location:' | tail -n1 | awk '{print $2}' | tr -d '\r\n')
+VERSION=$(basename "$URL" | sed -E 's/zoom_amd64\.deb//; s/.*prod\/([0-9.]+)\/.*/\1/')
+
+# Download to temp store to get SHA256
+TMP=$(mktemp -d)
+curl -L -o "$TMP/zoom_amd64.deb" "$URL"
+SHA256=$(nix hash file "$TMP/zoom_amd64.deb" --type sha256)
+
+# Write Nix snippet
+cat > pkgs/zoomUpstream/version.nix <<EOF
+{
+  version = "$VERSION";
+  src = fetchurl {
+    url = "$URL";
+    sha256 = "$SHA256";
+  };
+}
+EOF
+
+echo "Generated pkgs/zoomUpstream/version.nix -> version $VERSION"
+

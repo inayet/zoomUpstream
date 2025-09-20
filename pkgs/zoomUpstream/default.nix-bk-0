@@ -1,0 +1,100 @@
+{ lib
+, stdenv
+, fetchurl
+, autoPatchelfHook
+, dpkg
+, makeWrapper
+, makeDesktopItem
+, copyDesktopItems
+, alsa-lib
+, atk
+, at-spi2-atk
+, at-spi2-core
+, cairo
+, cups
+, dbus
+, expat
+, fontconfig
+, freetype
+, gdk-pixbuf
+, glib
+, gtk3
+, libdrm
+, libglvnd
+, libpulseaudio
+, libuuid
+, mesa
+, nspr
+, nss
+, pango
+, systemd
+, udev
+, xorg
+}:
+
+stdenv.mkDerivation rec {
+  pname = "zoomUpstream";
+  version = "6.6.0.4410";
+
+  src = fetchurl {
+    url = "https://cdn.zoom.us/prod/${version}/zoom_amd64.deb";
+    sha256 = "1kkj8q4kd7b0vfdncrrpvy5nw8y2rl3ka2gz0rai2r4864wxhhyf";
+  };
+
+  nativeBuildInputs = [
+    autoPatchelfHook
+    dpkg
+    copyDesktopItems
+    makeWrapper
+  ];
+
+  buildInputs = [
+    alsa-lib atk at-spi2-atk at-spi2-core cairo cups dbus expat
+    fontconfig freetype gdk-pixbuf glib gtk3 libdrm libglvnd
+    libpulseaudio libuuid mesa nspr nss pango systemd udev
+    xorg.libX11 xorg.libxcb xorg.libXcomposite xorg.libXcursor
+    xorg.libXdamage xorg.libXext xorg.libXfixes xorg.libXi
+    xorg.libXrender xorg.libXtst xorg.libXScrnSaver
+  ];
+
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg-deb -x $src .
+    runHook postUnpack
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out
+    cp -r opt/zoom $out/
+    mkdir -p $out/bin
+    ln -s $out/zoom/zoom $out/bin/zoom
+    runHook postInstall
+  '';
+
+  postFixup = ''
+    wrapProgram $out/bin/zoom \
+      --prefix PATH : ${lib.makeBinPath [ stdenv.cc.cc.lib ]} \
+      --set ZOOM_USE_WAYLAND 1 \
+      --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform --ozone-platform=wayland"
+  '';
+
+
+desktopItems = [
+(makeDesktopItem {
+  name = "zoomUpstream";
+  desktopName = "Zoom";
+  exec = "zoom"; # or "$out/bin/zoom" depending on wrapProgram
+  icon = "${placeholder "out"}/share/pixmaps/zoom.png"; # ✅ absolute path
+  categories = [ "Network" "VideoConference" ];
+})
+];
+
+  meta = with lib; {
+    description = "Zoom Video Conferencing client (upstream binary repackaged for Nix)";
+    homepage = "https://zoom.us";
+    license = licenses.unfree;
+    platforms = platforms.linux;
+  };
+}
+

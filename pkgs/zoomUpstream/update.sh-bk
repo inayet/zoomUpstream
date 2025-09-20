@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# follow redirect and grab only the final URL
+url=$(curl -sIL https://zoom.us/client/latest/zoom_amd64.deb \
+  | grep -i '^location' \
+  | tail -n1 \
+  | awk '{print $2}' \
+  | tr -d '\r')
+
+# extract version from the URL path (the directory before the file)
+version=$(echo "$url" | sed -E 's#.*/prod/([^/]+)/zoom_amd64\.deb#\1#')
+
+echo "Latest Zoom version: $version"
+echo "URL: $url"
+
+# inject into nix expression
+sha256=$(nix-prefetch-url "$url")
+echo "SHA256: $sha256"
+

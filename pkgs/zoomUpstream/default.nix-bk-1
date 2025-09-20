@@ -1,0 +1,99 @@
+{ lib
+, stdenv
+, fetchurl
+, autoPatchelfHook
+, dpkg
+, copyDesktopItems
+, makeDesktopItem
+, wrapProgram
+, alsa-lib
+, atk
+, at-spi2-atk
+, at-spi2-core
+, cairo
+, cups
+, dbus
+, expat
+, fontconfig
+, freetype
+, gdk-pixbuf
+, glib
+, gtk3
+, libdrm
+, libglvnd
+, libpulseaudio
+, libuuid
+, mesa
+, nspr
+, nss
+, pango
+, systemd
+, udev
+, xorg
+}:
+
+let
+  versionInfo = import ./version.nix { inherit fetchurl; };
+in
+
+stdenv.mkDerivation rec {
+  pname = "zoomUpstream";
+  version = versionInfo.version;
+
+  src = versionInfo.src;
+
+  nativeBuildInputs = [
+    autoPatchelfHook dpkg copyDesktopItems
+  ];
+
+  buildInputs = [
+    alsa-lib atk at-spi2-atk at-spi2-core cairo cups dbus expat
+    fontconfig freetype gdk-pixbuf glib gtk3 libdrm libglvnd
+    libpulseaudio libuuid mesa nspr nss pango systemd udev
+    xorg.libX11 xorg.libxcb xorg.libXcomposite xorg.libXcursor
+    xorg.libXdamage xorg.libXext xorg.libXfixes xorg.libXi
+    xorg.libXrender xorg.libXtst xorg.libXScrnSaver
+  ];
+
+  unpackPhase = ''
+    runHook preUnpack
+    dpkg-deb -x $src .
+    runHook postUnpack
+  '';
+
+  installPhase = ''
+    runHook preInstall
+    mkdir -p $out
+    cp -r opt/zoom $out/
+    mkdir -p $out/bin
+    ln -s $out/zoom/zoom $out/bin/zoom
+    runHook postInstall
+  '';
+
+  postFixup = ''
+    wrapProgram $out/bin/zoom \
+      --prefix PATH : ${lib.makeBinPath [ stdenv.cc.cc.lib ]} \
+      --set ZOOM_USE_WAYLAND 1 \
+      --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform --ozone-platform=wayland"
+  '';
+
+  desktopItems = [
+    (makeDesktopItem {
+      name = "zoomUpstream";
+      exec = "zoom";
+      icon = "$out/zoom/icon.png"; # must be absolute
+      comment = "Zoom Video Conferencing (upstream)";
+      desktopName = "Zoom";
+      categories = [ "Network" "VideoConference" ];
+    })
+  ];
+
+  meta = with lib; {
+    description = "Zoom Video Conferencing client (upstream binary repackaged for Nix)";
+    homepage = "https://zoom.us";
+    license = licenses.unfree;
+    maintainers = with maintainers; [ ];
+    platforms = platforms.linux;
+  };
+}
+
