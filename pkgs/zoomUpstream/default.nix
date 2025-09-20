@@ -154,8 +154,8 @@ stdenv.mkDerivation rec {
     qmlImportPath="$out/zoom/Qt/qml"
 
     # Precompute PATH and XDG_DATA_DIRS prefixes
-    pathPrefix=${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]}
-    xdgDataDirs=${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]}
+
+
     runtimeLibs="${lib.makeLibraryPath [ glib gtk3 gdk-pixbuf pango cairo freetype fontconfig libdrm pkgs.libgbm libglvnd alsa-lib pulseaudio libpulseaudio nspr nss wayland libxkbcommon pipewire udev systemd xorg.libX11 xorg.libxcb xorg.libXext xorg.libXrender xorg.libXcomposite xorg.libXcursor xorg.libXdamage xorg.libXfixes xorg.libXi xorg.libXrandr xorg.libXtst xorg.libXScrnSaver xorg.libxshmfence xorg.xcbutil xorg.xcbutilcursor xorg.xcbutilimage xorg.xcbutilwm xorg.xcbutilrenderutil xorg.xcbutilkeysyms libuuid mesa atk at-spi2-atk at-spi2-core expat dbus cups pkgs.krb5 stdenv.cc.cc ]}"
 
     # Move real binaries and remove symlink
@@ -173,9 +173,9 @@ stdenv.mkDerivation rec {
 set -euo pipefail
 export QT_PLUGIN_PATH="$qtPluginPath"
 export QML2_IMPORT_PATH="$qmlImportPath"
-export LD_LIBRARY_PATH="${NIX_LD_LIBRARY_PATH:+$NIX_LD_LIBRARY_PATH:}$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
-export PATH="$pathPrefix:\$PATH"
-export XDG_DATA_DIRS="$xdgDataDirs"
+export LD_LIBRARY_PATH="''${NIX_LD_LIBRARY_PATH:+$NIX_LD_LIBRARY_PATH:}$qtLibPath:$cefLibPath:$appLibPath:''${LD_LIBRARY_PATH:-}"
+
+
 
 export QT_STYLE_OVERRIDE=Fusion
 export ZOOM_USE_WAYLAND=1
@@ -183,7 +183,7 @@ export QT_QPA_PLATFORM="wayland;xcb"
 export QTWEBENGINE_DISABLE_SANDBOX=1
 export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist"
 
-if [ -z ''${XDG_RUNTIME_DIR:-} ]; then export XDG_RUNTIME_DIR="$(mktemp -d -p /tmp zoomrt-XXXXXX)"; fi
+
 if [ -z ''${DBUS_SESSION_BUS_ADDRESS:-} ]; then
   if command -v dbus-launch >/dev/null 2>&1; then
     eval "$(dbus-launch --sh-syntax)"
@@ -193,11 +193,11 @@ if [ -z ''${DBUS_SESSION_BUS_ADDRESS:-} ]; then
   fi
 fi
 
-trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
 
 
-if [ -n "${NIX_LD:-}" ] && [ -n "${NIX_LD_LIBRARY_PATH:-}" ]; then
+
+if [ -n "''${NIX_LD:-}" ] && [ -n "''${NIX_LD_LIBRARY_PATH:-}" ]; then
   exec "$NIX_LD" --library-path "$NIX_LD_LIBRARY_PATH" "$out/zoom/zoom.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
 else
   exec "$out/zoom/zoom.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
@@ -209,20 +209,20 @@ EOF
     cat > $out/zoom/ZoomWebviewHost <<EOF
     #!/usr/bin/env bash
     set -euo pipefail
-    if [ -z ''${XDG_RUNTIME_DIR:-} ]; then export XDG_RUNTIME_DIR="$(mktemp -d -p /tmp zoomrt-XXXXXX)"; fi
+
 export QT_PLUGIN_PATH="$qtPluginPath"
 export QML2_IMPORT_PATH="$qmlImportPath"
-export LD_LIBRARY_PATH="${NIX_LD_LIBRARY_PATH:+$NIX_LD_LIBRARY_PATH:}$qtLibPath:$cefLibPath:$appLibPath:$runtimeLibs:''${LD_LIBRARY_PATH:-}"
-export PATH="$pathPrefix:\$PATH"
-export XDG_DATA_DIRS="$xdgDataDirs"
+export LD_LIBRARY_PATH="''${NIX_LD_LIBRARY_PATH:+$NIX_LD_LIBRARY_PATH:}$qtLibPath:$cefLibPath:$appLibPath:''${LD_LIBRARY_PATH:-}"
+
+
 
 export QT_STYLE_OVERRIDE=Fusion
 export QT_QPA_PLATFORM="wayland;xcb"
 export QTWEBENGINE_DISABLE_SANDBOX=1
 export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist"
 
-if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi
-trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
+
+
 
 
 
