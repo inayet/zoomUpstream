@@ -30,6 +30,11 @@
   pulseaudio,
   xdg-utils,
 
+  wayland,
+  libxkbcommon,
+  pipewire,
+  xdg-desktop-portal,
+
   libuuid,
   mesa,
   nspr,
@@ -78,6 +83,11 @@ stdenv.mkDerivation rec {
     pulseaudio
     xdg-utils
 
+    wayland
+    libxkbcommon
+    pipewire
+    xdg-desktop-portal
+
     libuuid
     mesa
     nspr
@@ -98,6 +108,7 @@ stdenv.mkDerivation rec {
     xorg.libXrender
     xorg.libXtst
     xorg.libXScrnSaver
+    xorg.libxshmfence
 
     # XCB utilities
     xorg.xcbutil
@@ -134,9 +145,21 @@ stdenv.mkDerivation rec {
   '';
 
   postFixup = ''
+    # Wrap main Zoom binary
     wrapProgram $out/bin/zoom \
-      --prefix PATH : ${lib.makeBinPath [ stdenv.cc.cc.lib pulseaudio xdg-utils ]} \
+      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils xdg-desktop-portal pipewire ]} \
       --set ZOOM_USE_WAYLAND 1 \
+      --set QT_QPA_PLATFORM wayland \
+      --set NIXOS_OZONE_WL 1 \
+      --set QTWEBENGINE_DISABLE_SANDBOX 1 \
+      --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform --ozone-platform=wayland --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox"
+
+    # Ensure the CEF host gets the same flags and environment
+    wrapProgram $out/zoom/ZoomWebviewHost \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils xdg-desktop-portal pipewire ]} \
+      --set QT_QPA_PLATFORM wayland \
+      --set NIXOS_OZONE_WL 1 \
+      --set QTWEBENGINE_DISABLE_SANDBOX 1 \
       --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform --ozone-platform=wayland --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox"
   '';
 
