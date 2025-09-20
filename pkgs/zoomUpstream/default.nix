@@ -226,7 +226,7 @@ export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipe
 
 
 
-if [ -n "${NIX_LD:-}" ] && [ -n "${NIX_LD_LIBRARY_PATH:-}" ]; then
+if [ -n "''${NIX_LD:-}" ] && [ -n "''${NIX_LD_LIBRARY_PATH:-}" ]; then
   exec "$NIX_LD" --library-path "$NIX_LD_LIBRARY_PATH" "$out/zoom/ZoomWebviewHost.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
 else
   exec "$out/zoom/ZoomWebviewHost.real" --use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist "$@"
