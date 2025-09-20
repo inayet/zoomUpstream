@@ -130,16 +130,15 @@ stdenv.mkDerivation rec {
     xorg.xcbutilrenderutil
     xorg.xcbutilkeysyms
 
-    # Dropped Qt5 libraries (Qt6-only)
-    # qt5.qtbase
-    # qt5.qtmultimedia
-    # qt5.qtremoteobjects
-    # qt5.qtxmlpatterns
-
-    # qt5.qt3d
-    # qt5.qtgamepad
-    # qt5.qtquickcontrols2
-    # qt5.qtdeclarative
+    # Qt5 runtime libraries (required by Zoom's bundled Qt plugins)
+    qt5.qtbase
+    qt5.qtmultimedia
+    qt5.qtremoteobjects
+    qt5.qtxmlpatterns
+    qt5.qt3d
+    qt5.qtgamepad
+    qt5.qtquickcontrols2
+    qt5.qtdeclarative
   ];
 
   unpackPhase = ''
@@ -166,8 +165,8 @@ stdenv.mkDerivation rec {
     qmlImportPath="$out/zoom/Qt/qml"
 
     # Precompute PATH and XDG_DATA_DIRS prefixes
-    pathPrefix=${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire wireplumber ]}
-    xdgDataDirs=${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr ]}
+    pathPrefix=${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]}
+    xdgDataDirs=${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]}
 
     # Move real binaries and remove symlink
     mv -f $out/zoom/zoom $out/zoom/zoom.real
@@ -220,6 +219,7 @@ export QT_QPA_PLATFORM="wayland;xcb"
 export QTWEBENGINE_DISABLE_SANDBOX=1
 export QTWEBENGINE_CHROMIUM_FLAGS="--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist"
 
+if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi
 trap 'jobs -p | xargs -r kill 2>/dev/null || true' EXIT
 
 if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi
