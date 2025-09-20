@@ -145,22 +145,37 @@ stdenv.mkDerivation rec {
   '';
 
   postFixup = ''
+    # Common library and plugin paths for Zoom and its CEF host
+    qtLibPath="$out/zoom/Qt/lib"
+    cefLibPath="$out/zoom/cef"
+    appLibPath="$out/zoom"
+    qtPluginPath="$out/zoom/Qt/plugins"
+    qmlImportPath="$out/zoom/Qt/qml"
+
     # Wrap main Zoom binary
     wrapProgram $out/bin/zoom \
       --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils xdg-desktop-portal pipewire ]} \
+      --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
+      --set QT_PLUGIN_PATH "$qtPluginPath" \
+      --set QML2_IMPORT_PATH "$qmlImportPath" \
       --set ZOOM_USE_WAYLAND 1 \
       --set QT_QPA_PLATFORM wayland \
       --set NIXOS_OZONE_WL 1 \
       --set QTWEBENGINE_DISABLE_SANDBOX 1 \
-      --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform --ozone-platform=wayland --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox"
+      --set QTWEBENGINE_CHROMIUM_FLAGS "--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer,WaylandWindowDecorations --ozone-platform=wayland --ignore-gpu-blocklist" \
+      --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform,WebRTCPipeWireCapturer,WaylandWindowDecorations --ozone-platform=wayland --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist"
 
     # Ensure the CEF host gets the same flags and environment
     wrapProgram $out/zoom/ZoomWebviewHost \
       --prefix PATH : ${lib.makeBinPath [ xdg-utils xdg-desktop-portal pipewire ]} \
+      --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
+      --set QT_PLUGIN_PATH "$qtPluginPath" \
+      --set QML2_IMPORT_PATH "$qmlImportPath" \
       --set QT_QPA_PLATFORM wayland \
       --set NIXOS_OZONE_WL 1 \
       --set QTWEBENGINE_DISABLE_SANDBOX 1 \
-      --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform --ozone-platform=wayland --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox"
+      --set QTWEBENGINE_CHROMIUM_FLAGS "--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer,WaylandWindowDecorations --ozone-platform=wayland --ignore-gpu-blocklist" \
+      --add-flags "--use-gl=angle --use-angle=opengl --enable-features=UseOzonePlatform,WebRTCPipeWireCapturer,WaylandWindowDecorations --ozone-platform=wayland --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist"
   '';
 
   desktopItems = [
