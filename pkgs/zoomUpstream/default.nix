@@ -60,8 +60,9 @@ stdenv.mkDerivation rec {
 
   src = versionInfo.src;
   dontWrapQtApps = true;
+  dontAutoPatchelf = true;
   nativeBuildInputs = [
-    autoPatchelfHook
+    patchelf
     dpkg
     copyDesktopItems
     makeWrapper
@@ -128,15 +129,7 @@ stdenv.mkDerivation rec {
     xorg.xcbutilrenderutil
     xorg.xcbutilkeysyms
 
-    # Qt5 runtime libraries (required by Zoom's bundled Qt plugins)
-    qt5.qtbase
-    qt5.qtmultimedia
-    qt5.qtremoteobjects
-    qt5.qtxmlpatterns
-    qt5.qt3d
-    qt5.qtgamepad
-    qt5.qtquickcontrols2
-    qt5.qtdeclarative
+
   ];
 
   unpackPhase = ''
@@ -170,6 +163,10 @@ stdenv.mkDerivation rec {
     mv -f $out/zoom/zoom $out/zoom/zoom.real
     mv -f $out/zoom/ZoomWebviewHost $out/zoom/ZoomWebviewHost.real
     rm -f $out/bin/zoom
+
+    # Ensure a valid ELF interpreter; skip autoPatchelf to avoid Qt mismatches
+    patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker} $out/zoom/zoom.real
+    patchelf --set-interpreter ${stdenv.cc.bintools.dynamicLinker} $out/zoom/ZoomWebviewHost.real
 
     # Create main zoom wrapper
     cat > $out/bin/zoom <<EOF
