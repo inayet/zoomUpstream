@@ -1,7 +1,6 @@
 {
   lib,
   makeWrapper,
-  qt5,
   qt6,
   wrapGAppsHook,
   pkgs,
@@ -193,6 +192,7 @@ stdenv.mkDerivation rec {
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
       --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
       --run 'if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi' \
+      --run 'trap "jobs -p | xargs -r kill 2>/dev/null || true" EXIT' \
       --run 'if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi' \
       --run 'if [ ! -S "''${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi' \
       --run 'if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi' \
