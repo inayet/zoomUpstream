@@ -62,7 +62,7 @@ stdenv.mkDerivation rec {
   dontWrapQtApps = true;
   dontAutoPatchelf = true;
   nativeBuildInputs = [
-    patchelf
+    pkgs.patchelf
     dpkg
     copyDesktopItems
     makeWrapper
