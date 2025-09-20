@@ -34,6 +34,11 @@
   libxkbcommon,
   pipewire,
   xdg-desktop-portal,
+  xdg-desktop-portal-gtk,
+  xdg-desktop-portal-kde,
+  xdg-desktop-portal-wlr,
+
+  libsecret,
 
   libuuid,
   mesa,
@@ -87,6 +92,11 @@ stdenv.mkDerivation rec {
     libxkbcommon
     pipewire
     xdg-desktop-portal
+    xdg-desktop-portal-gtk
+    xdg-desktop-portal-kde
+    xdg-desktop-portal-wlr
+
+    libsecret
 
     libuuid
     mesa
@@ -117,6 +127,7 @@ stdenv.mkDerivation rec {
     xorg.xcbutilimage
     xorg.xcbutilwm # Fixed: was xcbutiliwm
     xorg.xcbutilrenderutil
+    xorg.xcbutilkeysyms
 
     # Qt5 libraries
     qt5.qtbase
@@ -155,26 +166,30 @@ stdenv.mkDerivation rec {
 
     # Wrap main Zoom binary
     wrapProgram $out/bin/zoom \
-      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils xdg-desktop-portal pipewire ]} \
+      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
+      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
       --set QT_PLUGIN_PATH "$qtPluginPath" \
       --set QML2_IMPORT_PATH "$qmlImportPath" \
-      --set ZOOM_USE_WAYLAND 0 \
-      --set QT_QPA_PLATFORM xcb \
+      --set QT_STYLE_OVERRIDE Fusion \
+      --set ZOOM_USE_WAYLAND 1 \
+      --set QT_QPA_PLATFORM "wayland;xcb" \
       --set QTWEBENGINE_DISABLE_SANDBOX 1 \
-      --set QTWEBENGINE_CHROMIUM_FLAGS "--enable-features=WebRTCPipeWireCapturer --ignore-gpu-blocklist" \
-      --add-flags "--use-gl=desktop --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist"
+      --set QTWEBENGINE_CHROMIUM_FLAGS "--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist" \
+      --add-flags "--use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist"
 
     # Ensure the CEF host gets the same flags and environment
     wrapProgram $out/zoom/ZoomWebviewHost \
-      --prefix PATH : ${lib.makeBinPath [ xdg-utils xdg-desktop-portal pipewire ]} \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
+      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
       --set QT_PLUGIN_PATH "$qtPluginPath" \
       --set QML2_IMPORT_PATH "$qmlImportPath" \
-      --set QT_QPA_PLATFORM xcb \
+      --set QT_STYLE_OVERRIDE Fusion \
+      --set QT_QPA_PLATFORM "wayland;xcb" \
       --set QTWEBENGINE_DISABLE_SANDBOX 1 \
-      --set QTWEBENGINE_CHROMIUM_FLAGS "--enable-features=WebRTCPipeWireCapturer --ignore-gpu-blocklist" \
-      --add-flags "--use-gl=desktop --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist"
+      --set QTWEBENGINE_CHROMIUM_FLAGS "--enable-features=UseOzonePlatform,WebRTCPipeWireCapturer --ozone-platform-hint=auto --enable-wayland-ime --ignore-gpu-blocklist" \
+      --add-flags "--use-gl=desktop --ozone-platform-hint=auto --enable-wayland-ime --no-sandbox --disable-setuid-sandbox --disable-gpu-sandbox --no-zygote --disable-seccomp-filter-sandbox --ignore-gpu-blocklist"
   '';
 
   desktopItems = [
