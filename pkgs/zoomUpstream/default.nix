@@ -156,7 +156,7 @@ stdenv.mkDerivation rec {
     # Precompute PATH and XDG_DATA_DIRS prefixes
     pathPrefix=${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]}
     xdgDataDirs=${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]}
-    runtimeLibs="${lib.makeLibraryPath [ glib gtk3 gdk-pixbuf pango cairo freetype fontconfig libdrm pkgs.libgbm libglvnd alsa-lib pulseaudio libpulseaudio nspr nss wayland libxkbcommon pipewire udev systemd xorg.libX11 xorg.libxcb xorg.libXext xorg.libXrender xorg.libXcomposite xorg.libXcursor xorg.libXdamage xorg.libXfixes xorg.libXi xorg.libXrandr xorg.libXtst xorg.libXScrnSaver xorg.libxshmfence xorg.xcbutil xorg.xcbutilcursor xorg.xcbutilimage xorg.xcbutilwm xorg.xcbutilrenderutil xorg.xcbutilkeysyms libuuid mesa atk at-spi2-atk at-spi2-core expat dbus stdenv.cc.cc ]}"
+    runtimeLibs="${lib.makeLibraryPath [ glib gtk3 gdk-pixbuf pango cairo freetype fontconfig libdrm pkgs.libgbm libglvnd alsa-lib pulseaudio libpulseaudio nspr nss wayland libxkbcommon pipewire udev systemd xorg.libX11 xorg.libxcb xorg.libXext xorg.libXrender xorg.libXcomposite xorg.libXcursor xorg.libXdamage xorg.libXfixes xorg.libXi xorg.libXrandr xorg.libXtst xorg.libXScrnSaver xorg.libxshmfence xorg.xcbutil xorg.xcbutilcursor xorg.xcbutilimage xorg.xcbutilwm xorg.xcbutilrenderutil xorg.xcbutilkeysyms libuuid mesa atk at-spi2-atk at-spi2-core expat dbus pkgs.krb5 stdenv.cc.cc ]}"
 
     # Move real binaries and remove symlink
     mv -f $out/zoom/zoom $out/zoom/zoom.real
