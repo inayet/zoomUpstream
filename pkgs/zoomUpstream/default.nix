@@ -2,8 +2,6 @@
   lib,
   makeWrapper,
   qt5,
-  qt6,
-  wrapGAppsHook,
   pkgs,
   stdenv,
   fetchurl,
@@ -67,7 +65,6 @@ stdenv.mkDerivation rec {
     dpkg
     copyDesktopItems
     makeWrapper
-    wrapGAppsHook
   ];
   buildInputs = [
     alsa-lib
