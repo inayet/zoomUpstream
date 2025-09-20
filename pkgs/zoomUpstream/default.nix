@@ -35,7 +35,7 @@
   pipewire,
   xdg-desktop-portal,
   xdg-desktop-portal-gtk,
-  xdg-desktop-portal-kde,
+
   xdg-desktop-portal-wlr,
 
   libsecret,
@@ -93,7 +93,7 @@ stdenv.mkDerivation rec {
     pipewire
     xdg-desktop-portal
     xdg-desktop-portal-gtk
-    xdg-desktop-portal-kde
+    pkgs.kdePackages.xdg-desktop-portal-kde
     xdg-desktop-portal-wlr
 
     libsecret
@@ -166,9 +166,9 @@ stdenv.mkDerivation rec {
 
     # Wrap main Zoom binary
     wrapProgram $out/bin/zoom \
-      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire ]} \
+      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
-      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
+      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
       --set QT_PLUGIN_PATH "$qtPluginPath" \
       --set QML2_IMPORT_PATH "$qmlImportPath" \
       --set QT_STYLE_OVERRIDE Fusion \
@@ -180,9 +180,9 @@ stdenv.mkDerivation rec {
 
     # Ensure the CEF host gets the same flags and environment
     wrapProgram $out/zoom/ZoomWebviewHost \
-      --prefix PATH : ${lib.makeBinPath [ xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire ]} \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
-      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
+      --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
       --set QT_PLUGIN_PATH "$qtPluginPath" \
       --set QML2_IMPORT_PATH "$qmlImportPath" \
       --set QT_STYLE_OVERRIDE Fusion \
