@@ -170,7 +170,7 @@ stdenv.mkDerivation rec {
       --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr pipewire wireplumber ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
       --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk pkgs.kdePackages.xdg-desktop-portal-kde xdg-desktop-portal-wlr ]} \
-      --run 'if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi' \
+      --run 'if [ -z "''${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi; trap "jobs -p | xargs -r kill 2>/dev/null || true" EXIT' \
       --run 'if [ -z "''${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z "''${ZOOM_WRAPPER_DBUS:-}" ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "$0" "$@"; fi' \
       --run 'if [ ! -S "''${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi' \
       --run 'if [ ! -S "''${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi' \
