@@ -33,6 +33,7 @@
   wayland,
   libxkbcommon,
   pipewire,
+  wireplumber,
   xdg-desktop-portal,
   xdg-desktop-portal-gtk,
 
@@ -91,6 +92,7 @@ stdenv.mkDerivation rec {
     wayland
     libxkbcommon
     pipewire
+    wireplumber
     xdg-desktop-portal
     xdg-desktop-portal-gtk
 
@@ -166,7 +168,13 @@ stdenv.mkDerivation rec {
 
     # Wrap main Zoom binary
     wrapProgram $out/bin/zoom \
-      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire ]} \
+      --run 'if [ -z "${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi' \
+      --run 'if [ -z "${DBUS_SESSION_BUS_ADDRESS:-}" ] && command -v dbus-run-session >/dev/null 2>&1 && [ -z "${ZOOM_WRAPPER_DBUS:-}" ]; then export ZOOM_WRAPPER_DBUS=1; exec dbus-run-session -- "$0" "$@"; fi' \
+      --run 'if [ ! -S "${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi' \
+      --run 'if [ ! -S "${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi' \
+      --run 'if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi' \
+      --run 'if command -v xdg-desktop-portal >/dev/null 2>&1; then (xdg-desktop-portal >/dev/null 2>&1 &); fi' \
+      --prefix PATH : ${lib.makeBinPath [ pulseaudio xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
       --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]} \
       --set QT_PLUGIN_PATH "$qtPluginPath" \
@@ -180,7 +188,12 @@ stdenv.mkDerivation rec {
 
     # Ensure the CEF host gets the same flags and environment
     wrapProgram $out/zoom/ZoomWebviewHost \
-      --prefix PATH : ${lib.makeBinPath [ xdg-utils xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire ]} \
+      --run 'if [ -z "${XDG_RUNTIME_DIR:-}" ]; then export XDG_RUNTIME_DIR="$(mktemp -d -t zoomrt-XXXXXX)"; fi' \
+      --run 'if [ ! -S "${XDG_RUNTIME_DIR}/pipewire-0" ] && command -v pipewire >/dev/null 2>&1; then (pipewire >/dev/null 2>&1 &); fi' \
+      --run 'if [ ! -S "${XDG_RUNTIME_DIR}/pulse/native" ] && command -v pipewire-pulse >/dev/null 2>&1; then (pipewire-pulse >/dev/null 2>&1 &); fi' \
+      --run 'if command -v wireplumber >/dev/null 2>&1; then (wireplumber >/dev/null 2>&1 &); fi' \
+      --run 'if command -v xdg-desktop-portal >/dev/null 2>&1; then (xdg-desktop-portal >/dev/null 2>&1 &); fi' \
+      --prefix PATH : ${lib.makeBinPath [ xdg-utils dbus xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr pipewire wireplumber ]} \
       --prefix LD_LIBRARY_PATH : "$qtLibPath:$cefLibPath:$appLibPath" \
       --prefix XDG_DATA_DIRS : ${lib.makeSearchPath "share" [ xdg-desktop-portal xdg-desktop-portal-gtk xdg-desktop-portal-wlr ]} \
       --set QT_PLUGIN_PATH "$qtPluginPath" \
